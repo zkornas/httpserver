@@ -32,20 +32,26 @@ while True:
             filename = '/index.html'
         
         try:
-            page = open(filename[1:])
+            page = open(filename[1:], 'rb')
             content = page.read()
             page.close
 
             response = "HTTP/1.1 200 OK\r\n"
-            response += "Content-Type: text/html\r\n"
-            response += "Content-Length: " + str(len(content)) + "\r\n"
-            response += "\r\n" + content
+            if filename == 'sal.JPG':
+                response += "Content-Type: image/jpeg\r\n"
+            else:
+                response += "Content-Type: text/html\r\n"
+                response += "Content-Length: " + str(len(content)) + "\r\n"
+                response += "\r\n" + content
 
         except FileNotFoundError:
             response = 'HTTP/1.1 404 NOT FOUND\r\nFile Not Found'
 
         # Send HTTP response
-        client_connection.sendall(response.encode())
+        try:
+            client_connection.sendall(response.encode())
+        except UnicodeDecodeError:
+            client_connection.sendall(response.encode('utf-16'))
         client_connection.close()
     elif request_type == 'POST':
         print(request_type)
