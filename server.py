@@ -16,27 +16,45 @@ while True:
 
     # Get the client request
     request = client_connection.recv(1024).decode()
-    print(request)
+    #print(request)
 
     headers = request.split('\n')
-    filename = headers[0].split()[1]
+    request_type = headers[0].split()[0]
+
+    print(headers[0])
+    print(request_type)
 
     # Open resource
-    if filename == '/':
-        filename = '/index.html'
-    
-    try:
-        page = open('docs' + filename)
-        content = page.read()
-        page.close
+    if request_type == 'GET':
+        filename = headers[0].split()[1]
+        print(filename)
+        if filename == '/':
+            filename = '/index.html'
+        
+        try:
+            page = open(filename[1:])
+            content = page.read()
+            page.close
 
-        response = 'HTTP/1.1 200 OK \n\n' + content
-    except FileNotFoundError:
-        response = 'HTTP/1.1 404 NOT FOUND\n\nFile Not Found'
+            response = 'HTTP/1.1 200 OK \r\n' + content
+        except FileNotFoundError:
+            response = 'HTTP/1.1 404 NOT FOUND\r\nFile Not Found'
 
-    # Send HTTP response
-    client_connection.sendall(response.encode())
-    client_connection.close()
+        # Send HTTP response
+        client_connection.sendall(response.encode())
+        client_connection.close()
+    elif request_type == 'POST':
+        print(request_type)
+    elif request_type == 'PUT':
+        print(request_type)
+    elif request_type == 'DELETE':
+        print(request_type)
+    else:
+        print('403 FORBIDDEN')
+
+        
+
+
 
 
 #tcp_socket.close()
