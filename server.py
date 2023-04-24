@@ -1,4 +1,5 @@
 import socket
+import os
 
 host = ""
 port = 80
@@ -24,41 +25,55 @@ while True:
     print(headers[0])
     print(request_type)
 
+    filename = headers[0].split()[1]
+
     # Open resource
     if request_type == 'GET':
-        filename = headers[0].split()[1]
         print(filename)
         if filename == '/':
             filename = '/index.html'
         
         try:
-            page = open(filename[1:], 'rb')
+            page = open(filename[1:])
             content = page.read()
             page.close
 
             response = "HTTP/1.1 200 OK\r\n"
-            if filename == 'sal.JPG':
-                response += "Content-Type: image/jpeg\r\n"
+
+            if filename == 'text.txt':
+                response += "Content-Type: text/plain\r\n"
             else:
                 response += "Content-Type: text/html\r\n"
                 response += "Content-Length: " + str(len(content)) + "\r\n"
-                response += "\r\n" + content #test
+                response += "\r\n" + content
 
         except FileNotFoundError:
             response = 'HTTP/1.1 404 NOT FOUND\r\nFile Not Found'
 
         # Send HTTP response
-        try:
-            client_connection.sendall(response.encode())
-        except UnicodeDecodeError:
-            client_connection.sendall(response.encode('utf-16'))
+        client_connection.sendall(response.encode())
         client_connection.close()
     elif request_type == 'POST':
-        print(request_type)
+        if os.path.isfile(filename[1:]):
+            content = headers[7]
+            with open(filename[1:], "a") as myfile:
+                myfile.write(content)
+            response = "HTTP/1.1 200 OK\r\n"
+        else:
+            response = 'HTTP/1.1 404 NOT FOUND\r\nFile Not Found'
+
     elif request_type == 'PUT':
         print(request_type)
+
     elif request_type == 'DELETE':
-        print(request_type)
+        if os.path.isfile(filename[1:]):
+            os.remove(filename[1:])
+            response = "HTTP/1.1 200 OK\r\n"
+        else:
+            response = 'HTTP/1.1 404 NOT FOUND\r\nFile Not Found'
+        client_connection.sendall(response.encode())
+        client_connection.close()
+    
     else:
         print('403 FORBIDDEN')
 
