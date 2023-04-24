@@ -42,7 +42,7 @@ while True:
             else:
                 response += "Content-Type: text/html\r\n"
                 response += "Content-Length: " + str(len(content)) + "\r\n"
-                response += "\r\n" + content
+                response += "\r\n" + content #testing
 
         except FileNotFoundError:
             response = 'HTTP/1.1 404 NOT FOUND\r\nFile Not Found'
