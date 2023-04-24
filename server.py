@@ -36,7 +36,11 @@ while True:
             content = page.read()
             page.close
 
-            response = 'HTTP/1.1 200 OK \r\n' + content
+            response = "HTTP/1.1 200 OK\r\n"
+            response += "Content-Type: text/html\r\n"
+            response += "Content-Length: " + str(len(content)) + "\r\n"
+            response += "\r\n" + content
+
         except FileNotFoundError:
             response = 'HTTP/1.1 404 NOT FOUND\r\nFile Not Found'
 
