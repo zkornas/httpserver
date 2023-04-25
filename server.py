@@ -63,8 +63,15 @@ while True:
             response = 'HTTP/1.1 404 NOT FOUND\r\nFile Not Found'
 
     elif request_type == 'PUT':
-        print(request_type)
-
+        if os.path.isfile(filename[1:]):
+            os.remove(filename[1:])
+        fp = open(filename[1:], 'x')
+        s = '\n'.join(str(x) for x in headers[10:])
+        fp.write(s)
+        fp.close()
+        response = "HTTP/1.1 200 OK\r\n"
+        client_connection.sendall(response.encode())
+        client_connection.close()
     elif request_type == 'DELETE':
         if os.path.isfile(filename[1:]):
             os.remove(filename[1:])
@@ -83,3 +90,7 @@ while True:
 
 
 #tcp_socket.close()
+
+#TODO
+#   Ask Eric about not getting 404 error for GET, but printing when getting to that line.
+#   Remove hard code for GET content type/length
