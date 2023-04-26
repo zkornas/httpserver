@@ -48,7 +48,8 @@ while True:
                 response += "\r\n" + content
 
         except FileNotFoundError:
-            response = 'HTTP/1.1 404 NOT FOUND\r\nFile Not Found'
+            response = 'HTTP/1.1 404 NOT FOUND File Not Found\r\n\r\n'
+            print("I'm returning a 404 error")
 
         # Send HTTP response
         client_connection.sendall(response.encode())
