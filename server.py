@@ -26,12 +26,12 @@ while True:
     print(request_type)
 
     filename = headers[0].split()[1]
+    body = '\n'.join(str(x) for x in headers[10:])
+    if filename == '/':
+        filename = '/index.html'
+    filetype = filename.split('.')[1]
 
-    # Open resource
     if request_type == 'GET':
-        print(filename)
-        if filename == '/':
-            filename = '/index.html'
         
         try:
             page = open(filename[1:])
@@ -40,58 +40,41 @@ while True:
 
             response = "HTTP/1.1 200 OK\r\n"
 
-            if filename == 'text.txt':
+            if filetype == 'txt':
                 response += "Content-Type: text/plain\r\n"
-            else:
+            
+            elif filetype == 'html':
                 response += "Content-Type: text/html\r\n"
-                response += "Content-Length: " + str(len(content)) + "\r\n"
-                response += "\r\n" + content
+            response += "Content-Length: " + str(len(content)) + "\r\n"
+            response += "\r\n" + content
 
         except FileNotFoundError:
             response = 'HTTP/1.1 404 NOT FOUND File Not Found\r\n\r\n'
-            print("I'm returning a 404 error")
 
-        # Send HTTP response
-        client_connection.sendall(response.encode())
-        client_connection.close()
     elif request_type == 'POST':
         if os.path.isfile(filename[1:]):
-            content = headers[7]
             with open(filename[1:], "a") as myfile:
-                myfile.write(content)
+                myfile.write(body)
             response = "HTTP/1.1 200 OK\r\n"
         else:
-            response = 'HTTP/1.1 404 NOT FOUND\r\nFile Not Found'
+            response = 'HTTP/1.1 404 NOT FOUND File Not Found\r\n\r\n'
 
     elif request_type == 'PUT':
         if os.path.isfile(filename[1:]):
             os.remove(filename[1:])
         fp = open(filename[1:], 'x')
-        s = '\n'.join(str(x) for x in headers[10:])
-        fp.write(s)
+        fp.write(body)
         fp.close()
         response = "HTTP/1.1 200 OK\r\n"
-        client_connection.sendall(response.encode())
-        client_connection.close()
+
     elif request_type == 'DELETE':
         if os.path.isfile(filename[1:]):
             os.remove(filename[1:])
             response = "HTTP/1.1 200 OK\r\n"
         else:
-            response = 'HTTP/1.1 404 NOT FOUND\r\nFile Not Found'
-        client_connection.sendall(response.encode())
-        client_connection.close()
+            response = 'HTTP/1.1 404 NOT FOUND File Not Found\r\n\r\n'
     
     else:
-        print('403 FORBIDDEN')
-
-        
-
-
-
-
-#tcp_socket.close()
-
-#TODO
-#   Ask Eric about not getting 404 error for GET, but printing when getting to that line.
-#   Remove hard code for GET content type/length
+        response = 'HTTP/1.1 403 FORBIDDEN\r\n\r\n'
+    client_connection.sendall(response.encode())
+    client_connection.close()
