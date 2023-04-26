@@ -17,22 +17,31 @@ while True:
 
     # Get the client request
     request = client_connection.recv(1024).decode()
-    #print(request)
+    request_message = request.split('\r\n')
 
-    headers = request.split('\n')
+    request_line = request_message[0].split()
+    request_type = request_line[0]
+    uri = request_line[1]
+
+    headers = request.split('\r\n')
     request_type = headers[0].split()[0]
 
-    print(headers[0])
-    print(request_type)
+    is_headers = True
+    headers = []
+    body = ''
+    for line in request_message[1:]:
+        if line == '':
+            is_headers = False
 
-    filename = headers[0].split()[1]
-    body = '\n'.join(str(x) for x in headers[10:])
-    if filename == '/':
-        filename = '/index.html'
+        if is_headers:
+            headers.append(line)
+        else:
+            body += line
+
+    filename = uri
     filetype = filename.split('.')[1]
 
     if request_type == 'GET':
-        
         try:
             page = open(filename[1:])
             content = page.read()
@@ -55,7 +64,7 @@ while True:
         if os.path.isfile(filename[1:]):
             with open(filename[1:], "a") as myfile:
                 myfile.write(body)
-            response = "HTTP/1.1 200 OK\r\n"
+            response = "HTTP/1.1 200 OK\r\n\r\n"
         else:
             response = 'HTTP/1.1 404 NOT FOUND File Not Found\r\n\r\n'
 
@@ -65,12 +74,12 @@ while True:
         fp = open(filename[1:], 'x')
         fp.write(body)
         fp.close()
-        response = "HTTP/1.1 200 OK\r\n"
+        response = "HTTP/1.1 200 OK\r\n\r\n"
 
     elif request_type == 'DELETE':
         if os.path.isfile(filename[1:]):
             os.remove(filename[1:])
-            response = "HTTP/1.1 200 OK\r\n"
+            response = "HTTP/1.1 200 OK\r\n\r\n"
         else:
             response = 'HTTP/1.1 404 NOT FOUND File Not Found\r\n\r\n'
     
